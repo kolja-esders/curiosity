@@ -1,0 +1,62 @@
+
+.sticky {
+   position: -webkit-sticky;
+   position: sticky;
+   top: 0;
+   z-index: 1;
+}
+.sticky:before,
+.sticky:after {
+    content: '';
+    display: table;
+}
+
+.nav-wrap {
+   background-color: #fff;
+   box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.btc-logo {
+   height: 40px;
+}
+
+.gdax-price {
+   color: #518dca;
+}
+
+.btc-price {
+   color: #ff9900;
+}
+
+.display-desc {
+   font-weight: 300;
+   color: #bbb;
+}
+
+.display-desc:hover {
+   color: #bbb;
+}
+
+.log-time {
+   color: #bbb;
+   white-space: nowrap;
+}
+
+.status {
+   display: inline-block;
+   height: 1.3rem;
+   width: 1.3rem;
+   border-radius: 1.7rem;
+   margin: 0.2rem 0.5rem 0.2rem 0;
+}
+
+.status.running {
+   background-color: green;
+}
+
+.status.stopped {
+   background-color: red;
+}
+.status.missing {
+   background-color: yellow;
+}

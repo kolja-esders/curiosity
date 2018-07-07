@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load active_tag %}
+  {% block title %}<title>Curiosity</title>{% endblock %}
+  {% block header %}{% endblock %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.bundle.min.js" integrity="sha384-3ziFidFTgxJXHMDttyPJKDuTlmxJlwbSkojudK/CkRqKDOmeSbN6KLrGdrBQnT2n" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js" crossorigin="anonymous"></script>
+  
+  {% load static %}
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+
+<body>
+  <div class="container-fluid sticky">
+    <div class="row nav-wrap pl-5 pr-5 pb-4 pt-4">
+      <nav class="nav nav-pills col-sm-6">
+        <img src="{% static 'imgs/btc-logo.png' %}" class="btc-logo pr-4">
+        <a class="flex-sm-fill text-sm-center nav-link {% add_active request 'index' %}" href="{% url 'index' %}">Dashboard</a>
+        <a class="flex-sm-fill text-sm-center nav-link {% add_active request 'trade' %}" href="{% url 'trade' %}">Trading</a>
+        <a class="flex-sm-fill text-sm-center nav-link {% add_active request 'stats' %}" href="{% url 'stats' %}">Statistics</a>
+        <a class="flex-sm-fill text-sm-center nav-link {% add_active request 'logs' %}" href="{% url 'logs' %}">Logs</a>
+        <a class="flex-sm-fill text-sm-center nav-link {% add_active request 'settings' %}" href="{% url 'settings' %}">Settings</a>
+      </nav>
+    </div>
+  </div>
+  <div class="container-fluid p-5">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

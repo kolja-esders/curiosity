@@ -1,0 +1,623 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{% load humanize %}
+
+
+<!--<h1 class="p-5 text-center">Assets</h1>-->
+
+<!--<div class="row pb-5">-->
+  <!--<div class="col-sm-4 text-center">-->
+    <!--<h1 class="display-4">{{ available|floatformat:2|intcomma}} €</h1>-->
+    <!--<h6 class="display-desc">AVAILABLE</h6>-->
+  <!--</div>-->
+  <!--<div class="col-sm-4 text-center">-->
+    <!--<h1 class="display-4">0.00 €</h1>-->
+    <!--<h6 class="display-desc">ON BLOCKCHAIN</h6>-->
+  <!--</div>-->
+  <!--<div class="col-sm-4 text-center">-->
+    <!--<h1 class="display-4">{{ on_sepa|floatformat:2|intcomma }} €</h1>-->
+    <!--<h6 class="display-desc">ON SEPA</h6>-->
+  <!--</div>-->
+<!--</div>-->
+
+<h1 class="p-5 text-center">BTC</h1>
+
+<div class="row pb-5">
+  <div class="col-sm-3 text-center btc-price">
+    <h1 class="display-4">{{ btc_cur_price|floatformat:2|intcomma }} €</h1>
+    <h6><a class="display-desc" href="https://www.bitcoin.de/de">BITCOIN.DE</a></h6>
+  </div>
+  <div class="col-sm-3 text-center gdax-price">
+    <h1 class="display-4">{{ gdax_cur_price |floatformat:2|intcomma }} €</h1>
+    <h6><a class="display-desc" href="https://www.gdax.com/">GDAX.COM</a></h6>
+  </div>
+  <div class="col-sm-3 text-center">
+    <h1 class="display-4">{{ delta|floatformat:2|intcomma }} €</h1>
+    <h6 class="display-desc">Δ</h6>
+  </div>
+  <div class="col-sm-3 text-center">
+    <h1 class="display-4">{{ profit_pct|floatformat:2 }} %</h1>
+    <h6 class="display-desc">π</h6>
+  </div>
+</div>
+
+<h1 class="p-5 text-center">ETH</h1>
+
+<div class="row pb-5">
+  <div class="col-sm-3 text-center btc-price">
+    <h1 class="display-4">{{ btc_cur_price_eth|floatformat:2|intcomma }} €</h1>
+    <h6><a class="display-desc" href="https://www.bitcoin.de/de">BITCOIN.DE</a></h6>
+  </div>
+  <div class="col-sm-3 text-center gdax-price">
+    <h1 class="display-4">{{ gdax_cur_price_eth |floatformat:2|intcomma }} €</h1>
+    <h6><a class="display-desc" href="https://www.gdax.com/">GDAX.COM</a></h6>
+  </div>
+  <div class="col-sm-3 text-center">
+    <h1 class="display-4">{{ delta_eth|floatformat:2|intcomma }} €</h1>
+    <h6 class="display-desc">Δ</h6>
+  </div>
+  <div class="col-sm-3 text-center">
+    <h1 class="display-4">{{ profit_pct_eth|floatformat:2 }} %</h1>
+    <h6 class="display-desc">π</h6>
+  </div>
+</div>
+
+<h1 class="p-5 text-center">BTC: Intraday</h1>
+
+<div class="row pb-5">
+  <div class="col-sm-6">
+    <canvas id="intraday_chart_comparison" width="400" height="200"></canvas>
+   </div>
+  <div class="col-sm-6">
+    <canvas id="intraday_chart_profit_pct" width="400" height="200"></canvas>
+   </div>
+</div>
+
+<h1 class="p-5 text-center">ETH: Intraday</h1>
+
+<div class="row pb-5">
+  <div class="col-sm-6">
+    <canvas id="intraday_chart_comparison_eth" width="400" height="200"></canvas>
+   </div>
+  <div class="col-sm-6">
+    <canvas id="intraday_chart_profit_pct_eth" width="400" height="200"></canvas>
+   </div>
+</div>
+
+<h1 class="p-5 text-center">BTC: All time</h1>
+
+<div class="row pb-5">
+  <div class="col-sm-6">
+    <canvas id="chart_comparison" width="400" height="200"></canvas>
+   </div>
+  <div class="col-sm-6">
+    <canvas id="chart_profit_pct" width="400" height="200"></canvas>
+   </div>
+</div>
+
+<h1 class="p-5 text-center">ETH: All time</h1>
+
+<div class="row pb-5">
+  <div class="col-sm-6">
+    <canvas id="chart_comparison_eth" width="400" height="200"></canvas>
+   </div>
+  <div class="col-sm-6">
+    <canvas id="chart_profit_pct_eth" width="400" height="200"></canvas>
+   </div>
+</div>
+
+
+<script>
+  var intra_gdax_data = {{ intra_gdax_asks|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+  var intra_btc_data = {{ intra_btc_asks|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+  var intra_profits_pct = {{ intra_profits_pct|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+
+  var ctx = document.getElementById("intraday_chart_comparison").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'gdax.com',
+              fill: false,
+              data: intra_gdax_data,
+              backgroundColor: [
+                  '#518dca',
+              ],
+              borderColor: [
+                  '#518dca',
+              ],
+              borderWidth: 1
+          }, {
+              label: 'bitcoin.de',
+              fill: false,
+              data: intra_btc_data,
+              backgroundColor: [
+                  '#ff9900',
+              ],
+              borderColor: [
+                  '#ff9900',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+            animation: false,
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+          tooltips: {
+              mode: 'x',
+              intersect: false,
+              animationDuration: 0
+          },
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Price (€)'
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                          unit: 'hour',
+                          unitStepSize: 1,
+                          displayFormats: {
+                              hour: 'HH'
+                          }
+                    },
+                    scaleLabel: {
+                          display: true,
+                          labelString: 'Time (hours)'
+                    }
+                }],
+            }
+        }
+  });
+
+  var ctx = document.getElementById("intraday_chart_profit_pct").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'Profit',
+              fill: false,
+              data: intra_profits_pct,
+              backgroundColor: [
+                  '#46BFBD',
+              ],
+              borderColor: [
+                  '#46BFBD',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+            animation: false,
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+          tooltips: {
+              mode: 'x',
+              intersect: false,
+              animationDuration: 0
+          },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Profit (%)'
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                          unit: 'hour',
+                          unitStepSize: 1,
+                          displayFormats: {
+                              hour: 'HH'
+                          }
+                    },
+                    scaleLabel: {
+                          display: true,
+                          labelString: 'Time (hours)'
+                    }
+                }],
+            }
+        }
+  });
+
+  var intra_gdax_data_eth = {{ intra_gdax_asks_eth|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+  var intra_btc_data_eth = {{ intra_btc_asks_eth|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+  var intra_profits_pct_eth = {{ intra_profits_pct_eth|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+
+
+  var ctx = document.getElementById("intraday_chart_comparison_eth").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'gdax.com',
+              fill: false,
+              data: intra_gdax_data_eth,
+              backgroundColor: [
+                  '#518dca',
+              ],
+              borderColor: [
+                  '#518dca',
+              ],
+              borderWidth: 1
+          }, {
+              label: 'bitcoin.de',
+              fill: false,
+              data: intra_btc_data_eth,
+              backgroundColor: [
+                  '#ff9900',
+              ],
+              borderColor: [
+                  '#ff9900',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+            animation: false,
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+          tooltips: {
+              mode: 'x',
+              intersect: false,
+              animationDuration: 0
+          },
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Price (€)'
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                          unit: 'hour',
+                          unitStepSize: 1,
+                          displayFormats: {
+                              hour: 'HH'
+                          }
+                    },
+                    scaleLabel: {
+                          display: true,
+                          labelString: 'Time (hours)'
+                    }
+                }],
+            }
+        }
+  });
+
+  var ctx = document.getElementById("intraday_chart_profit_pct_eth").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'Profit',
+              fill: false,
+              data: intra_profits_pct_eth,
+              backgroundColor: [
+                  '#46BFBD',
+              ],
+              borderColor: [
+                  '#46BFBD',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+            animation: false,
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+          tooltips: {
+              mode: 'x',
+              intersect: false,
+              animationDuration: 0
+          },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Profit (%)'
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                          unit: 'hour',
+                          unitStepSize: 1,
+                          displayFormats: {
+                              hour: 'HH'
+                          }
+                    },
+                    scaleLabel: {
+                          display: true,
+                          labelString: 'Time (hours)'
+                    }
+                }],
+            }
+        }
+  });
+
+
+  var gdax_data = {{ gdax_asks|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+  var btc_data = {{ btc_asks|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+  var profits_pct = {{ profits_pct|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+
+  var ctx = document.getElementById("chart_comparison").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'gdax.com',
+              fill: false,
+              data: gdax_data,
+              backgroundColor: [
+                  '#518dca',
+              ],
+              borderColor: [
+                  '#518dca',
+              ],
+              borderWidth: 1
+          }, {
+              label: 'bitcoin.de',
+              fill: false,
+              data: btc_data,
+              backgroundColor: [
+                  '#ff9900',
+              ],
+              borderColor: [
+                  '#ff9900',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+            animation: false,
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+            tooltips: {
+                mode: 'x',
+                intersect: false,
+                animationDuration: 0
+            },
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Price (€)'
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                          unit: 'day'
+                    },
+                    scaleLabel: {
+                          display: true,
+                          labelString: 'Time (days)'
+                    }
+                }],
+            }
+        }
+  });
+
+  var ctx = document.getElementById("chart_profit_pct").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'Profit',
+              fill: false,
+              data: profits_pct,
+              backgroundColor: [
+                  '#46BFBD',
+              ],
+              borderColor: [
+                  '#46BFBD',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+            animation: false,
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+          tooltips: {
+              mode: 'x',
+              intersect: false,
+              animationDuration: 0
+          },
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Profit (%)'
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                          unit: 'day'
+                    },
+                    scaleLabel: {
+                          display: true,
+                          labelString: 'Time (days)'
+                    }
+                }],
+            }
+        }
+  });
+
+
+  var gdax_data_eth = {{ gdax_asks_eth|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+  var btc_data_eth = {{ btc_asks_eth|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+  var profits_pct_eth = {{ profits_pct_eth|safe }}.map(function(d) {
+    return { 'y': d['y'], 'x': new Date(d['x']) }
+  });
+
+  var ctx = document.getElementById("chart_comparison_eth").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'gdax.com',
+              fill: false,
+              data: gdax_data_eth,
+              backgroundColor: [
+                  '#518dca',
+              ],
+              borderColor: [
+                  '#518dca',
+              ],
+              borderWidth: 1
+          }, {
+              label: 'bitcoin.de',
+              fill: false,
+              data: btc_data_eth,
+              backgroundColor: [
+                  '#ff9900',
+              ],
+              borderColor: [
+                  '#ff9900',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+            animation: false,
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+            tooltips: {
+                mode: 'x',
+                intersect: false,
+                animationDuration: 0
+            },
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Price (€)'
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                          unit: 'day'
+                    },
+                    scaleLabel: {
+                          display: true,
+                          labelString: 'Time (days)'
+                    }
+                }],
+            }
+        }
+  });
+
+  var ctx = document.getElementById("chart_profit_pct_eth").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'Profit',
+              fill: false,
+              data: profits_pct_eth,
+              backgroundColor: [
+                  '#46BFBD',
+              ],
+              borderColor: [
+                  '#46BFBD',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+            animation: false,
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+          tooltips: {
+              mode: 'x',
+              intersect: false,
+              animationDuration: 0
+          },
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Profit (%)'
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                          unit: 'day'
+                    },
+                    scaleLabel: {
+                          display: true,
+                          labelString: 'Time (days)'
+                    }
+                }],
+            }
+        }
+  });
+
+</script>
+
+{% endblock %}
